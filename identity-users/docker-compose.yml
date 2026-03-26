@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres@local
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    command: start-dev
+    container_name: keycloak
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: db
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres@local
+    ports:
+      - "9009:8080"
+    depends_on:
+      - db
+
+  keycloak-service:
+    build: .
+    container_name: keycloak-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - keycloak
